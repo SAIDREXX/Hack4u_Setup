@@ -59,6 +59,7 @@ done
 # Instalar y configurar Picom
 cd "$downloads_dir/picom"
 meson setup --buildtype=release build && ninja -C build && sudo ninja -C build install
+cd "$downloads_dir"
 
 # Descargar y configurar Kitty
 k_url=$(github_latest_url "kovidgoyal/kitty" "x86_64.txz")
