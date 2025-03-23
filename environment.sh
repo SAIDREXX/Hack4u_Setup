@@ -39,7 +39,7 @@ echo "Configurando bspwm y sxhkd..."
 mkdir -p "$config_dir/bspwm" "$config_dir/sxhkd"
 cp -r ./config/bspwm/* "$config_dir/bspwm/"
 cp -r ./config/sxhkd/* "$config_dir/sxhkd/"
-chmod +x "$config_dir/bspwm/bspwmrc" "$config_dir/bspwm/scripts/bspwm_resize"
+chmod +x "$config_dir/bspwm/bspwmrc" "$config_dir/bspwm/scripts/bspwm_resize.sh" "$config_dir/bspwm/scripts/ethernet_status.sh" "$config_dir/bspwm/scripts/vpn_status.sh"
 
 # Instalar y configurar Picom
 echo "Instalando Picom..."
@@ -78,6 +78,7 @@ echo "Instalando y configurando Polybar..."
 git clone https://github.com/VaughnValle/blue-sky.git "$downloads_dir/blue-sky"
 sudo cp -r "$downloads_dir/blue-sky/polybar/"* "$config_dir/polybar/"
 sudo cp "$downloads_dir/blue-sky/polybar/fonts/"* /usr/share/fonts/truetype/
+sudo cp -r "$downloads_dir/Hack4u_Setup/config/polybar/"* "$config_dir/polybar/"
 fc-cache -f -v
 
 mkdir -p "$config_dir/picom"
