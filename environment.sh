@@ -52,21 +52,20 @@ if [[ -n "$k_url" ]]; then
     sudo mkdir -p "$kitty_dir"
     sudo mv kitty.txz "$kitty_dir"
     cd "$kitty_dir"
-    sudo 7z x kitty.txz && rm kitty.txz
-    sudo tar -xf kitty.tar && rm kitty.tar
+    sudo 7z x kitty.txz && sudo rm kitty.txz
+    sudo tar -xf kitty.tar && sudo rm kitty.tar
 else
     echo "Error: No se pudo obtener la URL de Kitty."
     exit 1
 fi
 
 mkdir -p "$config_dir/kitty"
-cp -r ./config/kitty/* "$config_dir/kitty/"
+cp -r "$downloads_dir/Hack4u_Setup/config/kitty/*" "$config_dir/kitty/"
 
 # Configurar Wallpapers
 echo "Configurando fondos de pantalla..."
-cd "$downloads_dir/Hack4u_Setup"
 mkdir -p "$walls_dir"
-cp -r ./wallpaper/* "$walls_dir/"
+cp -r "$downloads_dir/Hack4u_Setup/wallpaper/*" "$walls_dir/"
 
 # Instalar y configurar Polybar
 echo "Instalando y configurando Polybar..."
@@ -76,7 +75,7 @@ cp "$downloads_dir/blue-sky/polybar/fonts/"* /usr/share/fonts/truetype/
 fc-cache -f -v
 
 mkdir -p "$config_dir/picom"
-cp -r ./config/picom/* "$config_dir/picom/"
+cp -r "$downloads_dir/Hack4u_Setup/config/picom/*" "$config_dir/picom/"
 
 # Cambiar shell solo si no es Zsh
 if [[ "$SHELL" != "/usr/bin/zsh" ]]; then
@@ -87,10 +86,10 @@ fi
 # Configurar Powerlevel10k
 echo "Configurando Powerlevel10k..."
 git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/powerlevel10k
-cp -r ./config/powerlevel10k/.10k.zsh ~/powerlevel10k
+cp -r "$downloads_dir/Hack4u_Setup/config/powerlevel10k/.10k.zsh" ~/powerlevel10k
 
 sudo git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /root/powerlevel10k
-sudo cp -r ./config/powerlevel10k/.10k.zsh-root /root/powerlevel10k/.p10k.zsh
+sudo cp -r "$downloads_dir/Hack4u_Setup/config/powerlevel10k/.10k.zsh-root" /root/powerlevel10k/.p10k.zsh
 
 # Crear enlace simbólico en /root/.zshrc con permisos adecuados
 if [[ ! -L /root/.zshrc ]]; then
