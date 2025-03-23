@@ -66,12 +66,12 @@ else
 fi
 
 mkdir -p "$config_dir/kitty"
-cp -r "$downloads_dir/Hack4u_Setup/config/kitty/*" "$config_dir/kitty/"
+cp -r "$downloads_dir/Hack4u_Setup/config/kitty/"* "$config_dir/kitty/"
 
 # Configurar Wallpapers
 echo "Configurando fondos de pantalla..."
 mkdir -p "$walls_dir"
-cp -r "$downloads_dir/Hack4u_Setup/wallpaper/*" "$walls_dir/"
+cp -r "$downloads_dir/Hack4u_Setup/wallpaper/"* "$walls_dir/"
 
 # Instalar y configurar Polybar
 echo "Instalando y configurando Polybar..."
