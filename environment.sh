@@ -116,7 +116,7 @@ LATEST_BAT_URL=$(curl -s $BAT_URL | grep "browser_download_url" | grep "_amd64.d
 
 if [[ -n "$LATEST_BAT_URL" ]]; then
     echo "Descargando bat desde: $LATEST_BAT_URL"
-    curl -L -o bat.deb "$LATEST_BAT_URL"
+    sudo curl -L -o bat.deb "$LATEST_BAT_URL"
     sudo dpkg -i bat.deb
 else
     echo "Error: No se pudo obtener la URL de bat."
@@ -128,7 +128,7 @@ LATEST_LSD_URL=$(curl -s $LSD_URL | grep "browser_download_url" | grep "_amd64.d
 
 if [[ -n "$LATEST_LSD_URL" ]]; then
     echo "Descargando lsd desde: $LATEST_LSD_URL"
-    curl -L -o lsd.deb "$LATEST_LSD_URL"
+    sudo curl -L -o lsd.deb "$LATEST_LSD_URL"
     sudo dpkg -i lsd.deb
 else
     echo "Error: No se pudo obtener la URL de lsd."
