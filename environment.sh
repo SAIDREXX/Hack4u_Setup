@@ -7,92 +7,132 @@ if [ "$(id -u)" -eq 0 ]; then
 fi
 
 # Definir variables
-if [ -d "$HOME/Downloads" ]; then
-    downloads_dir="$HOME/Downloads"
-elif [ -d "$HOME/Descargas" ]; then
-    downloads_dir="$HOME/Descargas"
-else
-    downloads_dir="$HOME/Downloads"
-fi
+downloads_dir="$HOME/Downloads"
 config_dir="$HOME/.config"
 walls_dir="$HOME/Pictures/Wallpapers"
 kitty_dir="/opt/kitty"
-repos=(
-    "https://github.com/yshui/picom.git"
-    "https://github.com/VaughnValle/blue-sky.git"
-    "https://github.com/romkatv/powerlevel10k.git"
-)
-
-dependencias=(
-    build-essential git vim bspwm sxhkd polybar rofi zsh imagemagick feh 
-    libconfig-dev libdbus-1-dev libegl-dev libev-dev libgl-dev libepoxy-dev libpcre2-dev 
-    libpixman-1-dev libx11-xcb-dev libxcb1-dev libxcb-composite0-dev libxcb-damage0-dev 
-    libxcb-glx0-dev libxcb-image0-dev libxcb-present-dev libxcb-randr0-dev libxcb-render0-dev 
-    libxcb-render-util0-dev libxcb-shape0-dev libxcb-util-dev libxcb-xfixes0-dev meson 
-    ninja-build uthash-dev zsh-autocomplete zsh-autosuggestions zsh-syntax-highlighting
-)
-
-github_latest_url() {
-    curl -s "https://api.github.com/repos/$1/releases/latest" | grep "browser_download_url" | grep "$2" | cut -d '"' -f 4 | head -n 1
-}
+kitty_url="https://api.github.com/repos/kovidgoyal/kitty/releases/latest"
+BAT_URL="https://api.github.com/repos/sharkdp/bat/releases/latest"
+LSD_URL="https://api.github.com/repos/lsd-rs/lsd/releases/latest"
 
 # Actualizar el sistema
 echo "Actualizando el sistema..."
 sudo apt update && sudo apt upgrade -y
 
-# Instalar dependencias
+# Instalar dependencias necesarias
 echo "Instalando paquetes esenciales..."
-sudo apt install -y "${dependencias[@]}"
+sudo apt install -y build-essential git vim bspwm sxhkd polybar rofi zsh imagemagick feh \
+    libconfig-dev libdbus-1-dev libegl-dev libev-dev libgl-dev libepoxy-dev libpcre2-dev libpixman-1-dev \
+    libx11-xcb-dev libxcb1-dev libxcb-composite0-dev libxcb-damage0-dev libxcb-glx0-dev \
+    libxcb-image0-dev libxcb-present-dev libxcb-randr0-dev libxcb-render0-dev libxcb-render-util0-dev \
+    libxcb-shape0-dev libxcb-util-dev libxcb-xfixes0-dev meson ninja-build uthash-dev zsh-autocomplete \
+    zsh-autosuggestions zsh-syntax-highlighting
 
 # Configurar bspwm y sxhkd
+echo "Configurando bspwm y sxhkd..."
 mkdir -p "$config_dir/bspwm" "$config_dir/sxhkd"
 cp -r ./config/bspwm/* "$config_dir/bspwm/"
 cp -r ./config/sxhkd/* "$config_dir/sxhkd/"
 chmod +x "$config_dir/bspwm/bspwmrc" "$config_dir/bspwm/scripts/bspwm_resize"
 
-# Clonar y configurar repositorios
-cd "$downloads_dir"
-for repo in "${repos[@]}"; do
-    git clone --depth=1 "$repo"
-done
-
 # Instalar y configurar Picom
-cd "$downloads_dir/picom"
-meson setup --buildtype=release build && ninja -C build && sudo ninja -C build install
+echo "Instalando Picom..."
 cd "$downloads_dir"
+git clone https://github.com/yshui/picom.git && cd picom
+meson setup --buildtype=release build && ninja -C build && sudo ninja -C build install
+cd ..
 
 # Descargar y configurar Kitty
-k_url=$(github_latest_url "kovidgoyal/kitty" "x86_64.txz")
-[ -z "$k_url" ] && { echo "Error obteniendo Kitty"; exit 1; }
-curl -L -o kitty.txz "$k_url"
-sudo mkdir -p "$kitty_dir"
-sudo tar -xf kitty.txz -C "$kitty_dir" && rm kitty.txz
+echo "Descargando la última versión de Kitty..."
+k_url=$(curl -s "$kitty_url" | grep "browser_download_url" | grep "x86_64.txz" | cut -d '"' -f 4 | head -n 1)
+
+if [[ -n "$k_url" ]]; then
+    echo "Descargando Kitty desde: $k_url"
+    curl -L -o kitty.txz "$k_url"
+    sudo mkdir -p "$kitty_dir"
+    sudo mv kitty.txz "$kitty_dir"
+    cd "$kitty_dir"
+    7z x kitty.txz && rm kitty.txz
+    tar -xf kitty.tar && rm kitty.tar
+else
+    echo "Error: No se pudo obtener la URL de Kitty."
+    exit 1
+fi
+
+mkdir -p "$config_dir/kitty"
+cp -r ./config/kitty/* "$config_dir/kitty/"
 
 # Configurar Wallpapers
+echo "Configurando fondos de pantalla..."
 mkdir -p "$walls_dir"
 cp -r ./wallpaper/* "$walls_dir/"
 
-# Configurar Polybar
-cp -r "$downloads_dir/blue-sky/polybar/*" "$config_dir/polybar/"
+# Instalar y configurar Polybar
+echo "Instalando y configurando Polybar..."
+git clone https://github.com/VaughnValle/blue-sky.git "$downloads_dir/blue-sky"
+cp -r "$downloads_dir/blue-sky/polybar/"* "$config_dir/polybar/"
+cp "$downloads_dir/blue-sky/polybar/fonts/"* /usr/share/fonts/truetype/
+fc-cache -f -v
+
 mkdir -p "$config_dir/picom"
 cp -r ./config/picom/* "$config_dir/picom/"
 
-# Configurar ZSH y Powerlevel10k
-git clone --depth=1 "https://github.com/romkatv/powerlevel10k.git" ~/powerlevel10k
-cp ./config/powerlevel10k/.10k.zsh ~/powerlevel10k
-ln -s -f "$HOME/.zshrc" /root/.zshrc
-sudo usermod --shell /usr/bin/zsh root
-sudo usermod --shell /usr/bin/zsh "$USER"
+# Cambiar shell solo si no es Zsh
+if [[ "$SHELL" != "/usr/bin/zsh" ]]; then
+    echo "Cambiando shell a Zsh..."
+    sudo usermod --shell /usr/bin/zsh "$USER"
+fi
 
-# Instalar sudo plugin para ZSH
+# Configurar Powerlevel10k
+echo "Configurando Powerlevel10k..."
+git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/powerlevel10k
+cp -r ./config/powerlevel10k/.10k.zsh ~/powerlevel10k
+
+sudo git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /root/powerlevel10k
+sudo cp -r ./config/powerlevel10k/.10k.zsh-root /root/powerlevel10k/.p10k.zsh
+
+# Crear enlace simbólico en /root/.zshrc con permisos adecuados
+if [[ ! -L /root/.zshrc ]]; then
+    echo "Creando enlace simbólico en /root/.zshrc..."
+    sudo ln -s -f "$HOME/.zshrc" /root/.zshrc
+else
+    echo "El enlace simbólico /root/.zshrc ya existe."
+fi
+
+# Instalar complemento sudo para Zsh
+echo "Instalando complemento sudo para Zsh..."
 sudo mkdir -p /usr/share/zsh-sudo
-wget -qO /usr/share/zsh-sudo/sudo.plugin.zsh "https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/plugins/sudo/sudo.plugin.zsh"
+sudo wget -q -O /usr/share/zsh-sudo/sudo.plugin.zsh https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/plugins/sudo/sudo.plugin.zsh
 
-# Instalar Bat y LSD
-for pkg in "sharkdp/bat" "lsd-rs/lsd"; do
-    url=$(github_latest_url "$pkg" "_amd64.deb")
-    [ -z "$url" ] && { echo "Error obteniendo $pkg"; exit 1; }
-    curl -L -o package.deb "$url"
-    sudo dpkg -i package.deb && rm package.deb
+# Descargar e instalar bat
+echo "Obteniendo la última versión de bat..."
+LATEST_BAT_URL=$(curl -s $BAT_URL | grep "browser_download_url" | grep "_amd64.deb" | cut -d '"' -f 4 | head -n 1)
 
-done
+if [[ -n "$LATEST_BAT_URL" ]]; then
+    echo "Descargando bat desde: $LATEST_BAT_URL"
+    curl -L -o bat.deb "$LATEST_BAT_URL"
+    sudo dpkg -i bat.deb
+else
+    echo "Error: No se pudo obtener la URL de bat."
+fi
+
+# Descargar e instalar lsd
+echo "Obteniendo la última versión de lsd..."
+LATEST_LSD_URL=$(curl -s $LSD_URL | grep "browser_download_url" | grep "_amd64.deb" | cut -d '"' -f 4 | head -n 1)
+
+if [[ -n "$LATEST_LSD_URL" ]]; then
+    echo "Descargando lsd desde: $LATEST_LSD_URL"
+    curl -L -o lsd.deb "$LATEST_LSD_URL"
+    sudo dpkg -i lsd.deb
+else
+    echo "Error: No se pudo obtener la URL de lsd."
+fi
+
+# Eliminar archivos temporales solo al final
+echo "Eliminando archivos temporales..."
+rm -rf "$downloads_dir/picom"
+rm -rf "$downloads_dir/blue-sky"
+rm -rf "$kitty_dir/kitty.txz"
+rm -rf bat.deb lsd.deb
+
+echo "Instalación y configuración completadas con éxito."
