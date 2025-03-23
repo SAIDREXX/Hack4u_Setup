@@ -7,7 +7,13 @@ if [ "$(id -u)" -eq 0 ]; then
 fi
 
 # Definir variables
-downloads_dir="$HOME/Downloads"
+if [ -d "$HOME/Downloads" ]; then
+    downloads_dir="$HOME/Downloads"
+elif [ -d "$HOME/Descargas" ]; then
+    downloads_dir="$HOME/Descargas"
+else
+    downloads_dir="$HOME/Downloads" # Por defecto, en caso de que no exista ninguna
+fi
 config_dir="$HOME/.config"
 walls_dir="$HOME/Pictures/Wallpapers"
 kitty_dir="/opt/kitty"
