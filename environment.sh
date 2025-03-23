@@ -79,6 +79,8 @@ git clone https://github.com/VaughnValle/blue-sky.git "$downloads_dir/blue-sky"
 sudo cp -r "$downloads_dir/blue-sky/polybar/"* "$config_dir/polybar/"
 sudo cp "$downloads_dir/blue-sky/polybar/fonts/"* /usr/share/fonts/truetype/
 sudo cp -r "$downloads_dir/Hack4u_Setup/config/polybar/"* "$config_dir/polybar/"
+sudo mkdir "$config_dir/bin"
+sudo touch "$config_dir/bin/target"
 fc-cache -f -v
 
 mkdir -p "$config_dir/picom"
@@ -134,6 +136,12 @@ if [[ -n "$LATEST_LSD_URL" ]]; then
 else
     echo "Error: No se pudo obtener la URL de lsd."
 fi
+
+git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+~/.fzf/install
+
+sudo git clone --depth 1 https://github.com/junegunn/fzf.git /root/.fzf
+sudo /root/.fzf/install
 
 # Eliminar archivos temporales solo al final
 echo "Eliminando archivos temporales..."
