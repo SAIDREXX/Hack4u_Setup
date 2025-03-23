@@ -52,8 +52,8 @@ if [[ -n "$k_url" ]]; then
     sudo mkdir -p "$kitty_dir"
     sudo mv kitty.txz "$kitty_dir"
     cd "$kitty_dir"
-    7z x kitty.txz && rm kitty.txz
-    tar -xf kitty.tar && rm kitty.tar
+    sudo 7z x kitty.txz && rm kitty.txz
+    sudo tar -xf kitty.tar && rm kitty.tar
 else
     echo "Error: No se pudo obtener la URL de Kitty."
     exit 1
@@ -64,6 +64,7 @@ cp -r ./config/kitty/* "$config_dir/kitty/"
 
 # Configurar Wallpapers
 echo "Configurando fondos de pantalla..."
+cd "$downloads_dir/Hack4u_Setup"
 mkdir -p "$walls_dir"
 cp -r ./wallpaper/* "$walls_dir/"
 
