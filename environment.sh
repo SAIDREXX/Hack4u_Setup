@@ -23,7 +23,7 @@ LSD_URL="https://api.github.com/repos/lsd-rs/lsd/releases/latest"
 
 # Actualizar el sistema
 echo "Actualizando el sistema..."
-sudo apt update && sudo apt upgrade -y
+sudo apt update && sudo parrot-upgrade -y
 
 # Instalar dependencias necesarias
 echo "Instalando paquetes esenciales..."
@@ -31,7 +31,7 @@ sudo apt install -y build-essential git vim bspwm sxhkd polybar rofi zsh imagema
     libconfig-dev libdbus-1-dev libegl-dev libev-dev libgl-dev libepoxy-dev libpcre2-dev libpixman-1-dev \
     libx11-xcb-dev libxcb1-dev libxcb-composite0-dev libxcb-damage0-dev libxcb-glx0-dev \
     libxcb-image0-dev libxcb-present-dev libxcb-randr0-dev libxcb-render0-dev libxcb-render-util0-dev \
-    libxcb-shape0-dev libxcb-util-dev libxcb-xfixes0-dev meson ninja-build uthash-dev zsh-autocomplete \
+    libxcb-shape0-dev libxcb-util-dev libxcb-xfixes0-dev meson cmake ninja-build uthash-dev zsh-autocomplete \
     zsh-autosuggestions zsh-syntax-highlighting
 
 # Configurar bspwm y sxhkd
@@ -98,10 +98,10 @@ fi
 # Configurar Powerlevel10k
 echo "Configurando Powerlevel10k..."
 git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/powerlevel10k
-cp -r "$downloads_dir/Hack4u_Setup/config/powerlevel10k/.10k.zsh" ~/powerlevel10k
+cp -r "$downloads_dir/Hack4u_Setup/config/powerlevel10k/.p10k.zsh" ~/powerlevel10k
 
 sudo git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /root/powerlevel10k
-sudo cp -r "$downloads_dir/Hack4u_Setup/config/powerlevel10k/.10k.zsh-root" /root/powerlevel10k/.p10k.zsh
+sudo cp -r "$downloads_dir/Hack4u_Setup/config/powerlevel10k/.p10k.zsh-root" /root/powerlevel10k/.p10k.zsh
 
 # Crear enlace simbólico en /root/.zshrc con permisos adecuados
 if [[ ! -L /root/.zshrc ]]; then
