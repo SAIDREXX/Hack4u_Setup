@@ -1,37 +1,94 @@
-if [ "$(whoami)" == "root" ]; then
+#!/bin/bash
+
+# Verificar que el script no se ejecute como root
+if [ "$(id -u)" -eq 0 ]; then
+    echo "No ejecutes este script como root. Usa un usuario normal con sudo."
     exit 1
 fi
 
-KITTY_URL="https://api.github.com/repos/kovidgoyal/kitty/releases/latest"
+# Definir variables
+downloads_dir="$HOME/Downloads"
+config_dir="$HOME/.config"
+walls_dir="$HOME/Pictures/Wallpapers"
+kitty_dir="/opt/kitty"
+kitty_url="https://api.github.com/repos/kovidgoyal/kitty/releases/latest"
+BAT_URL="https://api.github.com/repos/sharkdp/bat/releases/latest"
+LSD_URL="https://api.github.com/repos/lsd-rs/lsd/releases/latest"
 
-chmod +x ./get_latest_kitty.sh
-./get_latest_kitty.sh
+# Actualizar el sistema
+echo "Actualizando el sistema..."
+sudo apt update && sudo apt upgrade -y
 
-sudo apt update
-sudo parrot-upgrade
-cd /home/saidrexxx/Downloads
-sudo apt install build-essential git vim xcb libxcb-util0-dev libxcb-ewmh-dev libxcb-randr0-dev libxcb-icccm4-dev libxcb-keysyms1-dev libxcb-xinerama0-dev libasound2-dev libxcb-xtest0-dev libxcb-shape0-dev -y
-sudo apt install bspwm sxhkd
-mkdir -p ~/.config/bspwm
-mkdir -p ~/.config/sxhkd
-cp -r ./config/bspwm/* ~/.config/bspwm/
-cp -r ./config/sxhkd/* ~/.config/sxhkd/
-chmod +x ~/.config/bspwm/bspwmrc
-chmod +x ~/.config/bspwm/scripts/bspwm_resize
-sudo apt install polybar
-sudo apt install libconfig-dev libdbus-1-dev libegl-dev libev-dev libgl-dev libepoxy-dev libpcre2-dev libpixman-1-dev libx11-xcb-dev libxcb1-dev libxcb-composite0-dev libxcb-damage0-dev libxcb-glx0-dev libxcb-image0-dev libxcb-present-dev libxcb-randr0-dev libxcb-render0-dev libxcb-render-util0-dev libxcb-shape0-dev libxcb-util-dev libxcb-xfixes0-dev meson ninja-build uthash-dev -y
-git clone https://github.com/yshui/picom.git
-cd picom
-meson setup --buildtype=release build
-ninja -C build
-ninja -C build install
-sudo apt install rofi
-mv ./fonts/* /usr/local/share/fonts/
-sudo apt install zsh
+# Instalar dependencias necesarias
+echo "Instalando paquetes esenciales..."
+sudo apt install -y build-essential git vim bspwm sxhkd polybar rofi zsh imagemagick feh \
+    libconfig-dev libdbus-1-dev libegl-dev libev-dev libgl-dev libepoxy-dev libpcre2-dev libpixman-1-dev \
+    libx11-xcb-dev libxcb1-dev libxcb-composite0-dev libxcb-damage0-dev libxcb-glx0-dev \
+    libxcb-image0-dev libxcb-present-dev libxcb-randr0-dev libxcb-render0-dev libxcb-render-util0-dev \
+    libxcb-shape0-dev libxcb-util-dev libxcb-xfixes0-dev meson ninja-build uthash-dev zsh-autocomplete \
+    zsh-autosuggestions zsh-syntax-highlighting
 
-# Obtener la última versión del bundle
-echo "Obteniendo la última versión de Kitty..."
-LATEST_URL=$(curl -s $KITTY_URL | grep "browser_download_url" | grep "x86_64.txz" | cut -d '"' -f 4 | head -n 1)
+# Configurar bspwm y sxhkd
+echo "Configurando bspwm y sxhkd..."
+mkdir -p "$config_dir/bspwm" "$config_dir/sxhkd"
+cp -r ./config/bspwm/* "$config_dir/bspwm/"
+cp -r ./config/sxhkd/* "$config_dir/sxhkd/"
+chmod +x "$config_dir/bspwm/bspwmrc" "$config_dir/bspwm/scripts/bspwm_resize"
+
+# Instalar y configurar Picom
+echo "Instalando Picom..."
+cd "$downloads_dir"
+git clone https://github.com/yshui/picom.git && cd picom
+meson setup --buildtype=release build && ninja -C build && sudo ninja -C build install
+cd .. && rm -rf picom
+
+# Descargar y configurar Kitty
+echo "Descargando la última versión de Kitty..."
+k_url=$(curl -s "$kitty_url" | grep "browser_download_url" | grep "x86_64.txz" | cut -d '"' -f 4 | head -n 1)
+if [[ -z "$k_url" ]]; then
+    echo "No se pudo obtener la URL de Kitty. Verifica tu conexión a Internet."
+    exit 1
+fi
+
+echo "Descargando Kitty desde: $k_url"
+curl -L -o kitty.txz "$k_url"
+sudo mkdir -p "$kitty_dir"
+sudo mv kitty.txz "$kitty_dir"
+cd "$kitty_dir"
+7z x kitty.txz && rm kitty.txz
+tar -xf kitty.tar && rm kitty.tar
+
+mkdir -p "$config_dir/kitty"
+cp -r ./config/kitty/* "$config_dir/kitty/"
+
+# Configurar Wallpapers
+echo "Configurando fondos de pantalla..."
+mkdir -p "$walls_dir"
+cp -r ./wallpaper/* "$walls_dir/"
+
+# Instalar y configurar Polybar
+echo "Instalando y configurando Polybar..."
+git clone https://github.com/VaughnValle/blue-sky.git "$downloads_dir/blue-sky"
+cp -r "$downloads_dir/blue-sky/polybar/*" "$config_dir/polybar/"
+cp "$downloads_dir/blue-sky/polybar/fonts"/* /usr/share/fonts/truetype/
+fc-cache -f -v
+
+mkdir -p "$config_dir/picom" 
+cp -r ./config/picom/* "$config_dir/picom/"
+usermod --shell /usr/bin/zsh root
+usermod --shell /usr/bin/zsh "$USER"
+git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/powerlevel10k
+cp -r ./config/powerlevel10k/.10k.zsh ~/powerlevel10k
+git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /root/powerlevel10k
+cp -r ./config/powerlevel10k/.10k.zsh-root /root/powerlevel10k/.p10k.zsh
+ln -s -f "$HOME/.zshrc" /root/.zshrc
+chown root:root /usr/local/share/zsh/site-functions/_bspc
+mkdir /usr/share/zsh-sudo
+wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/plugins/sudo/sudo.plugin.zsh
+mv sudo.plugin.zsh /usr/share/zsh-sudo
+
+echo "Obteniendo la última versión de bat..."
+LATEST_URL=$(curl -s $BAT_URL | grep "browser_download_url" | grep "_amd64.deb" | cut -d '"' -f 4 | head -n 1)
 
 # Verificar si se encontró la URL
 if [[ -z "$LATEST_URL" ]]; then
@@ -39,29 +96,25 @@ if [[ -z "$LATEST_URL" ]]; then
     exit 1
 fi
 
-echo "Descargando Kitty desde: $LATEST_URL"
-curl -L -o kitty.txz "$LATEST_URL"
-mkdir /opt/kitty
-mv kitty.txz /opt/kitty
-7z x /opt/kitty/kitty.txz
-rm /opt/kitty/kitty.txz
-tar -xf /opt/kitty/kitty.tar
-rm /opt/kitty/kitty.tar
-mkdir -p ~/.config/kitty
-cp -r ./config/kitty/* ~/.config/kitty/
-sudo apt install imagemagick
-sudo apt install feh
-mkdir /home/saidrexxx/Pictures/Wallpapers
-cp -r ./wallpaper/* /home/saidrexxx/Pictures/Wallpapers/
-mkdir -p /root/.config/kitty
-cp -r ./config/kitty/* /root/.config/kitty/
-git clone https://github.com/VaughnValle/blue-sky.git
-cd blue-sky/
-cd polybar/
-cp -r * ~/.config/polybar/
-cp fonts/* /usr/share/fonts/truetype/
-fc-cache -f -v
+echo "Descargando bat desde: $LATEST_URL"
+curl -L -o bat.deb "$LATEST_URL"
 
+# Obtener la última versión del paquete .deb para AMD64
+echo "Obteniendo la última versión de lsd..."
+LATEST_URL=$(curl -s $LSD_URL | grep "browser_download_url" | grep "_amd64.deb" | cut -d '"' -f 4 | head -n 1)
+
+# Verificar si se encontró la URL
+if [[ -z "$LATEST_URL" ]]; then
+    echo "No se pudo obtener la URL de descarga. Verifica la conexión a internet o la API de GitHub."
+    exit 1
+fi
+
+echo "Descargando lsd desde: $LATEST_URL"
+curl -L -o lsd.deb "$LATEST_URL"
+
+# Instalar bat y lsd
+dpkg -i bat.deb lsd.deb
+rm bat.deb lsd.deb
 
 
 
