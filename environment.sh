@@ -76,12 +76,12 @@ cp -r "$downloads_dir/Hack4u_Setup/wallpaper/"* "$walls_dir/"
 # Instalar y configurar Polybar
 echo "Instalando y configurando Polybar..."
 git clone https://github.com/VaughnValle/blue-sky.git "$downloads_dir/blue-sky"
-cp -r "$downloads_dir/blue-sky/polybar/"* "$config_dir/polybar/"
-cp "$downloads_dir/blue-sky/polybar/fonts/"* /usr/share/fonts/truetype/
+sudo cp -r "$downloads_dir/blue-sky/polybar/"* "$config_dir/polybar/"
+sudo cp "$downloads_dir/blue-sky/polybar/fonts/"* /usr/share/fonts/truetype/
 fc-cache -f -v
 
 mkdir -p "$config_dir/picom"
-cp -r "$downloads_dir/Hack4u_Setup/config/picom/*" "$config_dir/picom/"
+cp -r "$downloads_dir/Hack4u_Setup/config/picom/"* "$config_dir/picom/"
 
 # Cambiar shell solo si no es Zsh
 if [[ "$SHELL" != "/usr/bin/zsh" ]]; then
